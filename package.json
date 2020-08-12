@@ -1,0 +1,19 @@
+{
+  "name": "reddit_clone",
+  "version": "1.0.0",
+  "description": "A clone of the popular website, reddit.com",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "author": "Anthony Ponzio",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.9.28"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}

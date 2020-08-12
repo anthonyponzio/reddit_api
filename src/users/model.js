@@ -37,5 +37,12 @@ userSchema.methods.toJSON = function () {
 	return user
 }
 
+userSchema.pre('save', function (next) {
+	if (this.isModified('password')) {
+		console.log('password was modified')
+	}
+	next()
+})
+
 const User = mongoose.model('User', userSchema)
 module.exports = User

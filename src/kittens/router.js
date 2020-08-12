@@ -8,7 +8,7 @@ router.post('/kittens', async (req, res) => {
 
 	try {
 		await kitten.save()
-		res.status(201).send({ kitten })
+		res.status(201).send(kitten)
 	} catch (e) {
 		res.status(400).send(e)
 	}
@@ -37,6 +37,18 @@ router.patch('/kittens/:id', async (req, res) => {
 	} catch (e) {
 		res.status(400).send(e)
 	}
+})
+
+router.delete('/kittens/:id', async (req, res) => {
+	try {
+		const kitten = await Kitten.findOneAndDelete({ _id: req.params.id	})
+		
+		if (!kitten) { return res.status(404).send() }
+		res.send(kitten)
+	} catch (e) {
+		res.status(500).send()
+	}
+
 })
 
 module.exports = router

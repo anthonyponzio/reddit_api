@@ -49,7 +49,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 userSchema.methods.generateAuthToken = async function () {
 	// TODO: get secret from process.env
-	const token = jwt.sign({ _id: this._id.toString() }, 'testsecret')
+	const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET)
 	this.tokens = this.tokens.concat({ token })
 	await this.save()
 

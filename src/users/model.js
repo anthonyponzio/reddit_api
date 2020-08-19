@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
 			if (!validator.isEmail(value)) {
 				throw new Error('Email is invalid!')
 			}
-		}
+		},
 	},
 	password: {
 		type: String,
@@ -27,10 +27,13 @@ const userSchema = new mongoose.Schema({
 		minlength: 7,
 		validate(value) {
 			// TODO: validate minimum password strength
-		}
+		},
 	},
 	tokens: [{
-		token: String,
+		token: {
+			type: String,
+			required: true,
+		},
 	}],
 }, { timestamps: true })
 

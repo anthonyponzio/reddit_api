@@ -1,5 +1,6 @@
 const express = require('express')
 const User = require('./model')
+const auth = require('../middleware/auth')
 
 const router = new express.Router()
 
@@ -11,6 +12,7 @@ const router = new express.Router()
 //   - if it does decrypt and get the users id, then find a user based on
 //     the id and the token
 
+// login user
 router.post('/users/login', async (req, res) => {
 	try {
 		const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -35,7 +37,12 @@ router.post('/users', async (req, res) => {
 	}
 })
 
-// read user
+// read authenticated user
+router.get('/users/me', auth, (req, res) => {
+	res.send(req.user)
+})
+
+// read user by id
 router.get('/users/:id', async (req, res) => {
 	try {
 		const user = await User.findOne({ _id: req.params.id })
@@ -46,8 +53,8 @@ router.get('/users/:id', async (req, res) => {
 	}
 })
 
-// update user
-router.patch('/users/:id', async (req, res) => {
+// update authenticated user
+router.patch('/users/me', auth, async (req, res) => {
 	const editableFields = ['password', 'email', 'username']
 	const fields = Object.keys(req.body)
 	const allFieldsValid = fields.every(field => editableFields.includes(field))
@@ -56,26 +63,20 @@ router.patch('/users/:id', async (req, res) => {
 		return res.status(400).send({ error: 'Invalid fields' })
 	}
 
-	try {
-		const user = await User.findOne({ _id: req.params.id })
-		
-		if (!user) { return res.status(404).send() }
-		
-		fields.forEach(field => user[field] = req.body[field])
-		
-		await user.save()
-		res.send(user)
+	try {		
+		fields.forEach(field => req.user[field] = req.body[field])
+		await req.user.save()
+		res.send(req.user)
 	} catch (e) {
 		res.status(400).send(e)
 	}
 })
 
-// delete user
-router.delete('/users/:id', async(req,res) => {
+// delete authenticated user
+router.delete('/users/me', auth, async (req, res) => {
 	try {
-		const user = await User.findOneAndDelete({ _id: req.params.id })
-		if (!user) { return res.status(404).send() }
-		res.send(user)
+		await req.user.remove()
+		res.send(req.user)
 	} catch (e) {
 		res.status(500).send()
 	}

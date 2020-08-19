@@ -1,3 +1,20 @@
-const auth = (req, res, next) => {
-	console.log(req)
+const jwt = require('jsonwebtoken')
+const User = require('../users/model')
+
+const auth = async (req, res, next) => {
+	try {
+		const token = req.header('Authorization').replace('Bearer ', '')
+		const { _id } = jwt.verify(token, 'testsecret')
+		const user = await User.findOne({ _id, 'tokens.token': token })
+		
+		if (!user) { throw new Error() }
+		
+		req.user = user
+		req.token = token
+		next()
+	} catch(e) {
+		return res.status(401).send({ error: 'Authentication required' })
+	}
 }
+
+module.exports = auth

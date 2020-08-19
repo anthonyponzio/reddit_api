@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 const userSchema = new mongoose.Schema({
 	username: {
@@ -24,25 +26,50 @@ const userSchema = new mongoose.Schema({
 		trim: true,
 		minlength: 7,
 		validate(value) {
-			// do some validation for minimum password strength
+			// TODO: validate minimum password strength
 		}
-	}
+	},
+	tokens: [{
+		token: String,
+	}],
 }, { timestamps: true })
 
-userSchema.methods.toJSON = function () {
-	const user = this.toObject()
-	delete user.password
-	// delete user.email // probably want to hide email
+userSchema.statics.findByCredentials = async (email, password) => {
+	const user = await User.findOne({ email })
+	if (!user) { throw new Error('Unable to login') }
+
+	const validPassword = await bcrypt.compare(password, user.password)
+	if (!validPassword) { throw new Error('Unable to login') }
 
 	return user
 }
 
-userSchema.pre('save', function (next) {
+userSchema.methods.generateAuthToken = async function () {
+	// TODO: get secret from process.env
+	const token = jwt.sign({ _id: this._id.toString() }, 'testsecret')
+	this.tokens = this.tokens.concat({ token })
+	await this.save()
+
+	return token
+}
+
+userSchema.methods.toJSON = function () {
+	const user = this.toObject()
+	delete user.password
+	delete user.tokens
+	// TODO: hide email?
+	// delete user.email
+
+	return user
+}
+
+userSchema.pre('save', async function (next) {
 	if (this.isModified('password')) {
-		console.log('password was modified')
+		this.password = await bcrypt.hash(this.password, 8)
 	}
 	next()
 })
 
 const User = mongoose.model('User', userSchema)
+
 module.exports = User

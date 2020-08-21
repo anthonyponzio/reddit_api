@@ -4,14 +4,6 @@ const auth = require('../middleware/auth')
 
 const router = new express.Router()
 
-// TODO: create authentication functionality
-// - user model should have function to create jwt tokens with the users
-//   id saved in them
-// - in the middleware the function should check and see if the request
-//   has a bearer token attached
-//   - if it does decrypt and get the users id, then find a user based on
-//     the id and the token
-
 // create user
 router.post('/users', async (req, res) => {
 	const user = new User(req.body)

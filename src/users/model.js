@@ -48,7 +48,6 @@ userSchema.statics.findByCredentials = async (email, password) => {
 }
 
 userSchema.methods.generateAuthToken = async function () {
-	// TODO: get secret from process.env
 	const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET)
 	this.tokens = this.tokens.concat({ token })
 	await this.save()
@@ -60,8 +59,7 @@ userSchema.methods.toJSON = function () {
 	const user = this.toObject()
 	delete user.password
 	delete user.tokens
-	// TODO: hide email?
-	// delete user.email
+	delete user.email
 
 	return user
 }

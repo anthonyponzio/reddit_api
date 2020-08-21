@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
 			// TODO: validate minimum password strength
 		},
 	},
+	posts: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Post'
+	}],
 	tokens: [{
 		token: {
 			type: String,

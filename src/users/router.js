@@ -12,18 +12,6 @@ const router = new express.Router()
 //   - if it does decrypt and get the users id, then find a user based on
 //     the id and the token
 
-// login user
-router.post('/users/login', async (req, res) => {
-	try {
-		const user = await User.findByCredentials(req.body.email, req.body.password)
-		const token = await user.generateAuthToken()
-
-		res.send({ user, token })
-	} catch (e) {
-		res.status(400).send(e)
-	}
-})
-
 // create user
 router.post('/users', async (req, res) => {
 	const user = new User(req.body)
@@ -77,6 +65,40 @@ router.delete('/users/me', auth, async (req, res) => {
 	try {
 		await req.user.remove()
 		res.send(req.user)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
+// login user
+router.post('/users/login', async (req, res) => {
+	try {
+		const user = await User.findByCredentials(req.body.email, req.body.password)
+		const token = await user.generateAuthToken()
+
+		res.send({ user, token })
+	} catch (e) {
+		res.status(400).send(e)
+	}
+})
+
+// logout authenticated user
+router.post('/users/me/logout', auth, async (req, res) => {
+	try {
+		req.user.tokens = req.user.tokens.filter(({ token }) => req.token !== token)
+		await req.user.save()
+		res.send()
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
+// logout all authenticated user instances
+router.post('/users/me/logout-all', auth, async (req, res) => {
+	try {
+		req.user.tokens = []
+		await req.user.save()
+		res.send()
 	} catch (e) {
 		res.status(500).send()
 	}

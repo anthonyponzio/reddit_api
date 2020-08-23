@@ -1,6 +1,7 @@
 const express = require('express')
 const User = require('./model')
 const auth = require('../middleware/auth')
+const allowedFields = require('../middleware/allowedFields')
 
 const router = new express.Router()
 
@@ -34,23 +35,16 @@ router.get('/users/:id', async (req, res) => {
 })
 
 // update authenticated user
-router.patch('/users/me', auth, async (req, res) => {
-	const editableFields = ['password', 'email', 'username']
-	const fields = Object.keys(req.body)
-	const allFieldsValid = fields.every(field => editableFields.includes(field))
-
-	if (!allFieldsValid) {
-		return res.status(400).send({ error: 'Invalid fields' })
+router.patch('/users/me', auth,	allowedFields(User.editableFields), async (req, res) => {
+		try {
+			req.fields.forEach(field => req.user[field] = req.body[field])
+			await req.user.save()
+			res.send(req.user)
+		} catch (e) {
+			res.status(400).send(e)
+		}
 	}
-
-	try {		
-		fields.forEach(field => req.user[field] = req.body[field])
-		await req.user.save()
-		res.send(req.user)
-	} catch (e) {
-		res.status(400).send(e)
-	}
-})
+)
 
 // delete authenticated user
 router.delete('/users/me', auth, async (req, res) => {

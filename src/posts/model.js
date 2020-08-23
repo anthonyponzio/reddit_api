@@ -19,6 +19,12 @@ const postSchema = new mongoose.Schema({
 	}
 }, { timestamps: true })
 
+postSchema.methods.editableByUser = function (user) {
+	return this.author.toString() === user._id.toString()
+}
+
+postSchema.statics.editableFields = ['title', 'body']
+
 const Post = mongoose.model('Post', postSchema)
 
 module.exports = Post

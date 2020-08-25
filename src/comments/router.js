@@ -46,14 +46,11 @@ router.post('/comments/:id/:voteAction', auth, async (req, res) => {
 		
 		await comment.vote(req.user._id, Comment.voteValues[voteAction])
 		await comment.save()
-		console.log('from router', comment)
 
 		res.send(comment)
 	} catch (e) {
 		res.status(500).send()
 	}
 })
-
-
 
 module.exports = router

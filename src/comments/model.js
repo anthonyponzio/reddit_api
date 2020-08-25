@@ -27,17 +27,15 @@ const commentSchema = new Schema({
 	}
 })
 
-commentSchema.methods.vote = async function (objectId, value) {
-	const id = objectId.toString()
-	const oldVote = this.votes[id]
-	if (oldVote) {
-		this.karma -= oldVote
-	}
+commentSchema.methods.vote = async function (userObjectId, voteValue) {
+	const userId = userObjectId.toString()
+	const oldVote = this.votes[userId]
+	if (oldVote) { this.karma -= oldVote }
 	
-	this.votes[id] = value
-	this.karma += value
+	this.votes[userId] = voteValue
+	this.karma += voteValue
 
-	await this.markModified(`votes.${id}`)
+	await this.markModified(`votes.${userId}`)
 	await this.save()
 }
 
@@ -47,15 +45,6 @@ commentSchema.statics.voteValues = {
 	'unvote': 0,
 }
 
-
-
-// router.post('/comments/:id/upvote', auth, async (req, res) => {
-
-// })
-
-// router.post('/comments/:id/downvote', auth, async (req, res) => {
-
-// })
 
 const Comment = mongoose.model('Comment', commentSchema)
 

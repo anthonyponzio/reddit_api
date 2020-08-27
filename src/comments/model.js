@@ -4,7 +4,8 @@ const Schema = mongoose.Schema
 const commentSchema = new Schema({
 	author: {
 		type: Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'User',
+		required: true,
 	},
 	body: {
 		type: String,
@@ -13,10 +14,19 @@ const commentSchema = new Schema({
 		maxlength: 500,
 		trim: true,
 	},
+	parent: {
+		type: Schema.Types.ObjectId,
+		ref: 'Comment',
+	},
 	children: [{
 		type: Schema.Types.ObjectId,
-		ref: 'Comment'
+		ref: 'Comment',
 	}],
+	post_id: {
+		type: Schema.Types.ObjectId,
+		ref: 'Post',
+		required: true,
+	},
 	votes: {
 		type: Object,
 		default: {},
@@ -44,7 +54,6 @@ commentSchema.statics.voteValues = {
 	'downvote': -1,
 	'unvote': 0,
 }
-
 
 const Comment = mongoose.model('Comment', commentSchema)
 

@@ -2,6 +2,8 @@ const express = require('express')
 const Comment = require('./model')
 const auth = require('../middleware/auth')
 
+// TODO: should comments be their own route or should comments
+// live on the /posts route, ex: /posts/:id/comments
 const router = new express.Router()
 
 // create comment
@@ -9,6 +11,8 @@ router.post('/comments', auth, async (req, res) => {
 	const comment = Comment({
 		author: req.user._id,
 		body: req.body.body,
+		parent: req.body.parent,
+		post_id: req.body.post_id,
 	})
 
 	try {
@@ -21,6 +25,8 @@ router.post('/comments', auth, async (req, res) => {
 })
 
 // read comment by id
+// TODO: is there a usecase for single comment reading?
+// in the case of comment threads, or permalinking comment threads yes
 router.get('/comments/:id', async (req, res) => {
 	try {
 		const comment = await Comment.findOne({ _id: req.params.id })

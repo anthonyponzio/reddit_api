@@ -13,23 +13,25 @@ router.post('/comments', auth, async (req, res) => {
 	const comment = Comment({
 		author: req.user._id,
 		body: req.body.body,
-		parent: req.body.parent || undefined,
+		parent: req.body.parent,
 		post_id: req.body.post_id,
 	})
 
 	try {
 		await comment.vote(req.user._id, 1)
 		await comment.save()
-		if (comment.parent) {
-			// comment is a reply, append to parent comments children
-			await Comment.appendChild(comment.parent, comment._id)
-		} else {
-			// comment is a root level comment, append to posts comments
-			await Post.appendComment(req.body.post_id, comment._id)
-		}
 		res.status(201).send(comment)
 	} catch (e) {
 		res.status(500).send(e)
+	}
+})
+
+router.get('/comments/me', auth, async (req, res) => {
+	try {
+		await req.user.populate('comments').execPopulate()
+		res.send(req.user.comments)
+	} catch (e) {
+		res.status(500).send()
 	}
 })
 
@@ -40,6 +42,7 @@ router.get('/comments/:id', async (req, res) => {
 	try {
 		const comment = await Comment.findOne({ _id: req.params.id })
 		if (!comment) { return res.status(404).send() }
+		await comment.populate('child_count').execPopulate()
 		res.send(comment)
 	} catch (e) {
 		res.status(500).send()
@@ -71,15 +74,12 @@ router.post('/comments/:id/:voteAction', auth, async (req, res) => {
 // update comment
 router.patch('/comments/:id', auth, allowedFields(Comment.editableFields), async (req, res) => {
 	try {
-		const comment = await Comment.findOne({
-			_id: req.params.id,
-			author: req.user._id
-		})
-
+		const comment = await Comment.findOne({ _id: req.params.id, author: req.user._id })
 		if (!comment) { return res.status(404).send() }
 		
 		req.fields.forEach(field => comment[field] = req.body[field])
 		await comment.save()
+
 		res.send(comment)
 	} catch (e) {
 		res.status(500).send()

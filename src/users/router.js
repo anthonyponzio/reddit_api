@@ -90,8 +90,4 @@ router.post('/users/me/logout-all', auth, async (req, res) => {
 	}
 })
 
-// TODO: read users posts by id
-
-// TODO: read users comments by id
-
 module.exports = router

@@ -29,11 +29,11 @@ const userSchema = new mongoose.Schema({
 			// TODO: validate minimum password strength
 		},
 	},
-	posts: [{
-		// TODO: consider switching this to a virtual
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Post'
-	}],
+	// posts: [{
+	// 	// TODO: consider switching this to a virtual
+	// 	type: mongoose.Schema.Types.ObjectId,
+	// 	ref: 'Post'
+	// }],
 	tokens: [{
 		token: {
 			type: String,
@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema({
 		},
 	}],
 }, { timestamps: true })
+
+userSchema.virtual('comments', {
+	ref: 'Comment',
+	localField: '_id',
+	foreignField: 'author',
+})
+
+userSchema.virtual('posts', {
+	ref: 'Post',
+	localField: '_id',
+	foreignField: 'author',
+})
 
 userSchema.statics.findByCredentials = async (email, password) => {
 	const user = await User.findOne({ email })

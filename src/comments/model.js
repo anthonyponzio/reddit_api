@@ -16,12 +16,8 @@ const commentSchema = new Schema({
 	},
 	parent: {
 		type: Schema.Types.ObjectId,
-		ref: 'Comment',
+		required: true,
 	},
-	children: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Comment',
-	}],
 	post_id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Post',
@@ -35,7 +31,20 @@ const commentSchema = new Schema({
 		type: Number,
 		default: 0,
 	}
-}, { timestamps: true })
+}, { timestamps: true, toJSON: { virtuals: true }})
+
+commentSchema.virtual('children', {
+	ref: 'Comment',
+	localField: '_id',
+	foreignField: 'parent'
+})
+
+commentSchema.virtual('child_count', {
+	ref: 'Comment',
+	localField: '_id',
+	foreignField: 'parent',
+	count: true
+})
 
 commentSchema.methods.vote = async function (userObjectId, voteValue) {
 	const userId = userObjectId.toString()
@@ -55,18 +64,7 @@ commentSchema.statics.voteValues = {
 	'unvote': 0,
 }
 
-commentSchema.statics.appendChild = async function (parent_id, child_id) {
-	const parentComment = Comment.findOne({ _id: parent_id })
-	if (!parentComment) { throw new Error({ error: 'parent not found' }) }
-	parentComment.children = parentComment.children.concat([ child_id ])
-	await parentComment.save()
-}
-
 commentSchema.statics.editableFields = ['body']
-
-commentSchema.methods.editableByUser = function (user) {
-	return this.author.toString() === user._id.toString()
-}
 
 const Comment = mongoose.model('Comment', commentSchema)
 

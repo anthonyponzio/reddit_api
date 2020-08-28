@@ -10,8 +10,8 @@ router.post('/posts', auth, async (req, res) => {
 	const post = new Post({ ...req.body, author: req.user._id })
 	try {
 		await post.save()
-		req.user.posts.push(post._id)
-		await req.user.save()
+		// req.user.posts.push(post._id)
+		// await req.user.save()
 		res.status(201).send(post)
 	} catch (e) {
 		res.status(400).send(e)
@@ -33,6 +33,7 @@ router.get('/posts/:id', async (req, res) => {
 	try {
 		const post = await Post.findOne({ _id: req.params.id })
 		if (!post) { return res.status(404).send() }
+		await post.populate('comments').execPopulate()
 		res.send(post)
 	} catch (e) {
 		res.status(500).send()
@@ -69,8 +70,7 @@ router.delete('/posts/:id', auth, async (req, res) => {
 			// otherwise delete post from db
 			await post.remove()
 		}
-		user.posts = user.posts.filter(post_id => post_id.equals(post._id))
-		await user.save()
+
 		res.send(post)
 	} catch (e) {
 		res.status(500).send()

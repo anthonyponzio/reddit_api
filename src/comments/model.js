@@ -55,6 +55,13 @@ commentSchema.statics.voteValues = {
 	'unvote': 0,
 }
 
+commentSchema.statics.appendChild = async function (parent_id, child_id) {
+	const parentComment = Comment.findOne({ _id: parent_id })
+	if (!parentComment) { throw new Error({ error: 'parent not found' }) }
+	parentComment.children = parentComment.children.concat([ child_id ])
+	await parentComment.save()
+}
+
 const Comment = mongoose.model('Comment', commentSchema)
 
 module.exports = Comment

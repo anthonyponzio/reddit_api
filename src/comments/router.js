@@ -1,5 +1,6 @@
 const express = require('express')
 const Comment = require('./model')
+const Post = require('../posts/model')
 const auth = require('../middleware/auth')
 
 // TODO: should comments be their own route or should comments
@@ -11,13 +12,20 @@ router.post('/comments', auth, async (req, res) => {
 	const comment = Comment({
 		author: req.user._id,
 		body: req.body.body,
-		parent: req.body.parent,
+		parent: req.body.parent || undefined,
 		post_id: req.body.post_id,
 	})
 
 	try {
 		await comment.vote(req.user._id, 1)
 		await comment.save()
+		if (comment.parent) {
+			// comment is a reply, append to parent comments children
+			await Comment.appendChild(comment.parent, comment._id)
+		} else {
+			// comment is a root level comment, append to posts comments
+			await Post.appendComment(req.body.post_id, comment._id)
+		}
 		res.status(201).send(comment)
 	} catch (e) {
 		res.status(500).send(e)

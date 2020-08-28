@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
-const postSchema = new mongoose.Schema({
+const postSchema = new Schema({
 	title: {
 		type: String,
 		required: true,
@@ -14,9 +15,13 @@ const postSchema = new mongoose.Schema({
 		trim: true,
 	},
 	author: {
-		type: mongoose.Schema.Types.ObjectId,
+		type:Schema.Types.ObjectId,
 		ref: 'User',
-	}
+	},
+	comments: [{
+		type:Schema.Types.ObjectId,
+		ref: 'Comment'
+	}],
 }, { timestamps: true })
 
 postSchema.methods.editableByUser = function (user) {
@@ -24,6 +29,12 @@ postSchema.methods.editableByUser = function (user) {
 }
 
 postSchema.statics.editableFields = ['title', 'body']
+
+postSchema.statics.appendComment = async function (post_id, comment_id) {
+	const post = await Post.findOne({ _id: post_id })
+	post.comments = post.comments.concat([comment_id])
+	await post.save()
+}
 
 const Post = mongoose.model('Post', postSchema)
 

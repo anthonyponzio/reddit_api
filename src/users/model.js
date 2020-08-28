@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
 		},
 	},
 	posts: [{
+		// TODO: consider switching this to a virtual
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Post'
 	}],

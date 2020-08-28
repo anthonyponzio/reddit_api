@@ -2,6 +2,7 @@ const express = require('express')
 const Comment = require('./model')
 const Post = require('../posts/model')
 const auth = require('../middleware/auth')
+const allowedFields = require('../middleware/allowedFields')
 
 // TODO: should comments be their own route or should comments
 // live on the /posts route, ex: /posts/:id/comments
@@ -60,6 +61,46 @@ router.post('/comments/:id/:voteAction', auth, async (req, res) => {
 		
 		await comment.vote(req.user._id, Comment.voteValues[voteAction])
 		await comment.save()
+
+		res.send(comment)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
+// update comment
+router.patch('/comments/:id', auth, allowedFields(Comment.editableFields), async (req, res) => {
+	try {
+		const comment = await Comment.findOne({
+			_id: req.params.id,
+			author: req.user._id
+		})
+
+		if (!comment) { return res.status(404).send() }
+		
+		req.fields.forEach(field => comment[field] = req.body[field])
+		await comment.save()
+		res.send(comment)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
+// delete comment
+router.delete('/comments/:id', auth, async (req, res) => {
+	try {
+		const comment = await Comment.findOne({ _id: req.params.id, author: req.user._id })
+		if (!comment) { return res.status(404).send() }
+		if (comment.children.length > 0) {
+			// if there are child comments we dont want to outright delete the comment
+			// we instead remove the author and body information from the comment
+			comment.author = undefined;
+			comment.body = undefined;
+			await comment.save()
+		} else {
+			// otherwise we delete the comment
+			await comment.remove()
+		}
 
 		res.send(comment)
 	} catch (e) {

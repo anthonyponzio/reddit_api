@@ -35,7 +35,7 @@ const commentSchema = new Schema({
 		type: Number,
 		default: 0,
 	}
-})
+}, { timestamps: true })
 
 commentSchema.methods.vote = async function (userObjectId, voteValue) {
 	const userId = userObjectId.toString()
@@ -60,6 +60,12 @@ commentSchema.statics.appendChild = async function (parent_id, child_id) {
 	if (!parentComment) { throw new Error({ error: 'parent not found' }) }
 	parentComment.children = parentComment.children.concat([ child_id ])
 	await parentComment.save()
+}
+
+commentSchema.statics.editableFields = ['body']
+
+commentSchema.methods.editableByUser = function (user) {
+	return this.author.toString() === user._id.toString()
 }
 
 const Comment = mongoose.model('Comment', commentSchema)

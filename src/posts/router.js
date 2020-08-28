@@ -42,12 +42,35 @@ router.get('/posts/:id', async (req, res) => {
 // update post
 router.patch('/posts/:id', auth, allowedFields(Post.editableFields), async (req, res) => {
 	try {
-		const post = await Post.findOne({ _id: req.params.id })
+		const post = await Post.findOne({ _id: req.params.id, author: req.user._id })
 		if (!post) { return res.status(404).send() }
-		if (!post.editableByUser(req.user)) { return res.status(403).send() }
 		
 		req.fields.forEach(field => post[field] = req.body[field])
 		await post.save()
+		res.send(post)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
+// delete post
+router.delete('/posts/:id', auth, async (req, res) => {
+	try {
+		const { user } = req
+		const post = await Post.findOne({ _id: req.params.id, author: user._id })
+		if (!post) { return res.status(404).send() }
+
+		if (post.comments.length > 0) {
+			// if the post has comments, just remove author information and body
+			post.author = undefined
+			post.body = undefined
+			await post.save()
+		} else {
+			// otherwise delete post from db
+			await post.remove()
+		}
+		user.posts = user.posts.filter(post_id => post_id.equals(post._id))
+		await user.save()
 		res.send(post)
 	} catch (e) {
 		res.status(500).send()

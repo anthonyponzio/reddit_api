@@ -6,14 +6,18 @@ const bcrypt = require('bcryptjs')
 const userSchema = new mongoose.Schema({
 	username: {
 		type: String,
+		unique: true,
 		required: true,
 		trim: true,
+		maxlength: 20,
+		minlength: 3,
 	},
 	email: {
 		type: String,
 		unique: true,
 		required: true,
 		lowercase: true,
+		trim: true,
 		validate(value) {
 			if (!validator.isEmail(value)) {
 				throw new Error('Email is invalid!')
@@ -25,15 +29,8 @@ const userSchema = new mongoose.Schema({
 		required: true,
 		trim: true,
 		minlength: 7,
-		validate(value) {
-			// TODO: validate minimum password strength
-		},
+		maxlength: 100,
 	},
-	// posts: [{
-	// 	// TODO: consider switching this to a virtual
-	// 	type: mongoose.Schema.Types.ObjectId,
-	// 	ref: 'Post'
-	// }],
 	tokens: [{
 		token: {
 			type: String,

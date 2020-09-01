@@ -36,6 +36,6 @@ const subredditSchema = new Schema({
 	}
 })
 
-const model = mongoose.model('Subreddit', subredditSchema)
+const Subreddit = mongoose.model('Subreddit', subredditSchema)
 
-module.exports = model
+module.exports = Subreddit

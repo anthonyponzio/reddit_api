@@ -42,7 +42,8 @@ router.get('/comments/:id', async (req, res) => {
 	try {
 		const comment = await Comment.findOne({ _id: req.params.id })
 		if (!comment) { return res.status(404).send() }
-		await comment.populate('child_count').execPopulate()
+		// TODO: do comments need child_count?
+		// await comment.populate('child_count').execPopulate()
 		res.send(comment)
 	} catch (e) {
 		res.status(500).send()

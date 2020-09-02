@@ -5,13 +5,13 @@ const auth = require('../middleware/auth')
 
 // create subreddit
 router.post('/subreddits', auth, async (req, res) => {
-	const subreddit = new Subreddit({
-		...req.body,
-		owner: req.user._id,
-	})
+	const { user } = req
+	const subreddit = new Subreddit({...req.body, owner: user._id })
 
 	try {
 		await subreddit.save()
+		await subreddit.joinSubreddit(user._id)
+		await user.joinSubreddit(subreddit._id)
 		res.status(201).send(subreddit)
 	} catch (e) {
 		if (e.code === 11000) {
@@ -22,6 +22,7 @@ router.post('/subreddits', auth, async (req, res) => {
 	}
 })
 
+// get authenticated user subreddits
 router.get('/subreddits/me', auth, async (req, res) => {
 	try {
 		await req.user.populate('subreddits', 'name').execPopulate()
@@ -42,6 +43,7 @@ router.get('/subreddits/:id', async (req, res) => {
 	}
 })
 
+// join subreddit
 router.post('/subreddits/:id/join', auth, async (req, res) => {
 	try {
 		const { user } = req

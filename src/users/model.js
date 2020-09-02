@@ -85,13 +85,13 @@ userSchema.methods.toJSON = function () {
 	return user
 }
 
-userSchema.methods.joinSubreddit = function (subredditObjectId) {
+userSchema.methods.joinSubreddit = async function (subredditObjectId) {
 	const subredditId = subredditObjectId.toString()
 	if (this.subreddits.includes(subredditId)) {
 		throw new Error('User is already a member of that subreddit')
 	}
-	
-	this.subreddits = this.subreddits.concat(subredditId)
+
+	this.subreddits = this.subreddits.concat([subredditId])
 	await this.save()
 }
 

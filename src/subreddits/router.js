@@ -33,12 +33,18 @@ router.get('/subreddits/:id', async (req, res) => {
 	}
 })
 
-// router.post('/subreddits/:id/join', auth, async (req, res) => {
-// 	try {
-		
-// 	} catch (e) {
+router.post('/subreddits/:id/join', auth, async (req, res) => {
+	try {
+		const { user } = req
+		const subreddit = await Subreddit.findOne({ _id: req.params.id })
+		if (!subreddit) { return res.status(404).send() }
 
-// 	}
-// })
+		await subreddit.joinSubreddit(user._id)
+		await req.user.joinSubreddit(subreddit._id)
+		res.send()
+	} catch (e) {
+		res.status(500).send(e)
+	}
+})
 
 module.exports = router

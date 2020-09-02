@@ -43,6 +43,7 @@ const subredditSchema = new Schema({
 subredditSchema.methods.joinSubreddit = async function (userObjectId) {
 	const userId = userObjectId.toString()
 	if (this.members[userId]) {
+		console.log('something ran here')
 		throw new Error('User is already a member of that subreddit')
 	}
 

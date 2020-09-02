@@ -33,4 +33,12 @@ router.get('/subreddits/:id', async (req, res) => {
 	}
 })
 
+// router.post('/subreddits/:id/join', auth, async (req, res) => {
+// 	try {
+		
+// 	} catch (e) {
+
+// 	}
+// })
+
 module.exports = router

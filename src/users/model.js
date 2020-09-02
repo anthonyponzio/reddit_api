@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const { Schema } = require( 'mongoose' )
 
 const userSchema = new mongoose.Schema({
 	username: {
@@ -37,6 +38,10 @@ const userSchema = new mongoose.Schema({
 			required: true,
 		},
 	}],
+	subreddits: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Subreddit',
+	}]
 }, { timestamps: true })
 
 userSchema.virtual('comments', {
@@ -78,6 +83,16 @@ userSchema.methods.toJSON = function () {
 	delete user.email
 
 	return user
+}
+
+userSchema.methods.joinSubreddit = function (subredditObjectId) {
+	const subredditId = subredditObjectId.toString()
+	if (this.subreddits.includes(subredditId)) {
+		throw new Error('User is already a member of that subreddit')
+	}
+	
+	this.subreddits = this.subreddits.concat(subredditId)
+	await this.save()
 }
 
 userSchema.pre('save', async function (next) {

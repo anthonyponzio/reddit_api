@@ -18,7 +18,7 @@ const subredditSchema = new Schema({
 			const space = /\s/;
 
 			if (space.test(value)) {
-				throw new Error('Subreddit name cannot contain space')
+				throw new Error('Subreddit name cannot contain spaces')
 			} else if (!alphanumeric.test(value)) {
 				throw new Error('Subreddit name can only contain alphanumeric characters, underscores, or dashes')
 			}

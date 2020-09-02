@@ -37,8 +37,19 @@ const subredditSchema = new Schema({
 	members: {
 		type: Object,
 		default: {}
-	}
+	},
 })
+
+subredditSchema.methods.joinSubreddit = async function (userObjectId) {
+	const userId = userObjectId.toString()
+	if (this.members[userId]) {
+		throw new Error('User is already a member of that subreddit')
+	}
+
+	this.members[userId] = true
+	await this.markModified(`members.${userId}`)
+	await this.save()
+}
 
 const Subreddit = mongoose.model('Subreddit', subredditSchema)
 

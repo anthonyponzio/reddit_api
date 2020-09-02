@@ -33,6 +33,10 @@ const subredditSchema = new Schema({
 		required: true,
 		maxlength: 150,
 		minlength: 3,
+	},
+	members: {
+		type: Object,
+		default: {}
 	}
 })
 

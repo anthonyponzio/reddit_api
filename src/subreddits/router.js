@@ -22,4 +22,15 @@ router.post('/subreddits', auth, async (req, res) => {
 	}
 })
 
+// get subreddit by id
+router.get('/subreddits/:id', async (req, res) => {
+	try {
+		const subreddit = await Subreddit.findOne({ _id: req.params.id})
+		if (!subreddit) { return res.status(404).send() }
+		res.send(subreddit)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
 module.exports = router

@@ -22,6 +22,15 @@ router.post('/subreddits', auth, async (req, res) => {
 	}
 })
 
+router.get('/subreddits/me', auth, async (req, res) => {
+	try {
+		await req.user.populate('subreddits', 'name').execPopulate()
+		res.send(req.user.subreddits)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
+
 // get subreddit by id
 router.get('/subreddits/:id', async (req, res) => {
 	try {

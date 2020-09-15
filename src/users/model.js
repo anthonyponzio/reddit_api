@@ -69,9 +69,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.statics.editableFields = ['username', 'password', 'email']
 
 userSchema.methods.generateAuthToken = async function () {
-	const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET)
-	this.tokens = this.tokens.concat({ token })
-	await this.save()
+	const user = this
+	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
+	user.tokens = user.tokens.concat({ token })
+	await user.save()
 
 	return token
 }
@@ -85,19 +86,35 @@ userSchema.methods.toJSON = function () {
 	return user
 }
 
-userSchema.methods.joinSubreddit = async function (subredditObjectId) {
-	const subredditId = subredditObjectId.toString()
-	if (this.subreddits.includes(subredditId)) {
+userSchema.methods.belongsToSubreddit = function (subredditId) {
+	return this.subreddits.some(id => id.equals(subredditId))
+}
+
+userSchema.methods.joinSubreddit = async function (subredditId) {
+	const user = this
+	if (user.belongsToSubreddit(subredditId)) {
 		throw new Error('User is already a member of that subreddit')
 	}
 
-	this.subreddits = this.subreddits.concat([subredditId])
-	await this.save()
+	user.subreddits = user.subreddits.concat([subredditId])
+	await user.save()
 }
 
+userSchema.methods.leaveSubreddit = async function (subredditId) {
+	const user = this
+	if (!user.belongsToSubreddit(subredditId)) {
+		throw new Error('User is not a member of that subreddit')
+	}
+
+	user.subreddits = user.subreddits.filter(id => !id.equals(subredditId))
+	await user.save()
+}
+
+
 userSchema.pre('save', async function (next) {
-	if (this.isModified('password')) {
-		this.password = await bcrypt.hash(this.password, 8)
+	const user = this
+	if (user.isModified('password')) {
+		user.password = await bcrypt.hash(user.password, 8)
 	}
 	next()
 })

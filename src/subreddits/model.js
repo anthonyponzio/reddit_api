@@ -42,8 +42,7 @@ const subredditSchema = new Schema({
 
 subredditSchema.methods.joinSubreddit = async function (userObjectId) {
 	const userId = userObjectId.toString()
-	if (this.members[userId]) {
-		console.log('something ran here')
+	if (!!this.members[userId]) {
 		throw new Error('User is already a member of that subreddit')
 	}
 
@@ -51,6 +50,20 @@ subredditSchema.methods.joinSubreddit = async function (userObjectId) {
 	await this.markModified(`members.${userId}`)
 	await this.save()
 }
+
+subredditSchema.methods.leaveSubreddit = async function (userObjectId) {
+	const userId = userObjectId.toString()
+	if (!this.members[userId]) {
+		throw new Error('User is not a member of that subreddit')
+	} else if (this.owner.equals(userId)) {
+		throw new Error('Users cannot leave subreddits they own')
+	}
+
+	delete this.members[userId]
+	await this.markModified(`members.${userId}`)
+	await this.save()
+}
+
 
 const Subreddit = mongoose.model('Subreddit', subredditSchema)
 

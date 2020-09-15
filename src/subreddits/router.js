@@ -51,11 +51,33 @@ router.post('/subreddits/:id/join', auth, async (req, res) => {
 		if (!subreddit) { return res.status(404).send() }
 
 		await subreddit.joinSubreddit(user._id)
-		await req.user.joinSubreddit(subreddit._id)
+		await user.joinSubreddit(subreddit._id)
 		res.send()
 	} catch (e) {
-		res.status(500).send(e)
+		res.status(400).send({ error: e.message })
 	}
 })
+
+// leave subreddit
+router.post('/subreddits/:id/leave', auth, async (req, res) => {
+	try {
+		const { user } = req
+		const subreddit = await Subreddit.findOne({ _id: req.params.id })
+		if (!subreddit) { return res.status(404).send() }
+
+		await subreddit.leaveSubreddit(user._id)
+		await user.leaveSubreddit(subreddit._id)
+		res.send()
+	} catch (e) {
+		console.log(e)
+		res.status(400).send({ error: e.message })
+	}
+})
+
+// update subreddit
+
+// delete subreddit
+
+
 
 module.exports = router
